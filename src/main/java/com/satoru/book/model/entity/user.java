@@ -8,8 +8,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.*;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -31,8 +31,6 @@ import java.util.Objects;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString(exclude = {"tokens", "transactionHistories", "userRoles"})
-@EqualsAndHashCode(exclude = {"tokens", "transactionHistories", "userRoles"})
 public class User implements UserDetails {
 
     @Id
@@ -76,8 +74,8 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        String roleName = !userRoles.isEmpty() 
-            ? userRoles.get(0).getRole().getName().name() 
+        String roleName = !userRoles.isEmpty()
+            ? userRoles.get(0).getRole().getName().name()
             : "USER";
         return Collections.singleton(new SimpleGrantedAuthority("ROLE_" + roleName));
     }

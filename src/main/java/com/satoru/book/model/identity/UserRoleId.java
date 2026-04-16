@@ -18,7 +18,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserRoleId implements Serializable {
-
+    //Composite Primary Key
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
