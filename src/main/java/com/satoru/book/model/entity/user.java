@@ -11,10 +11,9 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -23,13 +22,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 @Entity
 @Table(name = "Users")
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString(exclude = {"tokens", "transactionHistories", "userRoles"})
@@ -77,11 +76,10 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return userRoles.stream()
-                .map(UserRole::getRole)
-                .map(Role::getName)
-                .map(roleName -> new SimpleGrantedAuthority("ROLE_" + roleName.name()))
-                .collect(Collectors.toList());
+        String roleName = !userRoles.isEmpty() 
+            ? userRoles.get(0).getRole().getName().name() 
+            : "USER";
+        return Collections.singleton(new SimpleGrantedAuthority("ROLE_" + roleName));
     }
 
     @Override
@@ -96,7 +94,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return !Boolean.TRUE.equals(accountLocked);
+        return true;
     }
 
     @Override
@@ -106,6 +104,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return Boolean.TRUE.equals(enabled);
+        return true;
     }
 }
