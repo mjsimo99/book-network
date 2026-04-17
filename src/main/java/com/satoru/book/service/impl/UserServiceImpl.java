@@ -1,10 +1,12 @@
 package com.satoru.book.service.impl;
 
 import com.satoru.book.model.dto.UserDTO;
+import com.satoru.book.model.dto.responseDto.UserRespDTO;
 import com.satoru.book.model.entity.User;
 import com.satoru.book.repository.UserRepository;
 import com.satoru.book.service.UserService;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.NotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,11 +28,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserDTO> getAllUsers() {
+    public List<UserRespDTO> getAllUsers() {
         try {
             List<User> users = userRepository.findAll();
             return users.stream()
-                    .map(user -> modelMapper.map(user, UserDTO.class))
+                    .map(user -> modelMapper.map(user, UserRespDTO.class))
                     .collect(Collectors.toList());
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch all users: " + e.getMessage());
@@ -38,11 +40,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO getUserById(Long userId) {
+    public UserRespDTO getUserById(Long userId) {
         try {
             User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
-            return modelMapper.map(user, UserDTO.class);
+                    .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
+            return modelMapper.map(user, UserRespDTO.class);
+        } catch (NotFoundException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch user with ID " + userId + ": " + e.getMessage());
         }
@@ -63,11 +67,13 @@ public class UserServiceImpl implements UserService {
     public UserDTO updateUser(Long userId, UserDTO userDTO) {
         try {
             User existingUser = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+                    .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
             modelMapper.map(userDTO, existingUser);
             existingUser.setUserId(userId);
             existingUser = userRepository.save(existingUser);
             return modelMapper.map(existingUser, UserDTO.class);
+        } catch (NotFoundException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("Failed to update user with ID " + userId + ": " + e.getMessage());
         }
@@ -77,9 +83,11 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(Long userId) {
         try {
             if (!userRepository.existsById(userId)) {
-                throw new RuntimeException("User not found with ID: " + userId);
+                throw new NotFoundException("User not found with ID: " + userId);
             }
             userRepository.deleteById(userId);
+        } catch (NotFoundException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("Failed to delete user with ID " + userId);
         }

@@ -1,10 +1,12 @@
 package com.satoru.book.service.impl;
 
 import com.satoru.book.model.dto.BookDTO;
+import com.satoru.book.model.dto.responseDto.BookRespDTO;
 import com.satoru.book.model.entity.Book;
 import com.satoru.book.repository.BookRepository;
 import com.satoru.book.service.BookService;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.NotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,11 +28,11 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public List<BookDTO> getAllBooks() {
+    public List<BookRespDTO> getAllBooks() {
         try {
             List<Book> books = bookRepository.findAll();
             return books.stream()
-                    .map(book -> modelMapper.map(book, BookDTO.class))
+                    .map(book -> modelMapper.map(book, BookRespDTO.class))
                     .collect(Collectors.toList());
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch all books: " + e.getMessage());
@@ -38,11 +40,13 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public BookDTO getBookById(Long bookId) {
+    public BookRespDTO getBookById(Long bookId) {
         try {
             Book book = bookRepository.findById(bookId)
-                    .orElseThrow(() -> new RuntimeException("Book not found with ID: " + bookId));
-            return modelMapper.map(book, BookDTO.class);
+                    .orElseThrow(() -> new NotFoundException("Book not found with ID: " + bookId));
+            return modelMapper.map(book, BookRespDTO.class);
+        } catch (NotFoundException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch book with ID " + bookId + ": " + e.getMessage());
         }
@@ -63,11 +67,13 @@ public class BookServiceImpl implements BookService {
     public BookDTO updateBook(Long bookId, BookDTO bookDTO) {
         try {
             Book existingBook = bookRepository.findById(bookId)
-                    .orElseThrow(() -> new RuntimeException("Book not found with ID: " + bookId));
+                    .orElseThrow(() -> new NotFoundException("Book not found with ID: " + bookId));
             modelMapper.map(bookDTO, existingBook);
             existingBook.setBookId(bookId);
             existingBook = bookRepository.save(existingBook);
             return modelMapper.map(existingBook, BookDTO.class);
+        } catch (NotFoundException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("Failed to update book with ID " + bookId + ": " + e.getMessage());
         }
@@ -77,9 +83,11 @@ public class BookServiceImpl implements BookService {
     public void deleteBook(Long bookId) {
         try {
             if (!bookRepository.existsById(bookId)) {
-                throw new RuntimeException("Book not found with ID: " + bookId);
+                throw new NotFoundException("Book not found with ID: " + bookId);
             }
             bookRepository.deleteById(bookId);
+        } catch (NotFoundException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("Failed to delete book with ID " + bookId);
         }

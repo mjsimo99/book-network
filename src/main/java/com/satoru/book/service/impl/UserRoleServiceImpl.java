@@ -1,6 +1,7 @@
 package com.satoru.book.service.impl;
 
 import com.satoru.book.model.dto.UserRoleDTO;
+import com.satoru.book.model.dto.responseDto.UserRoleRespDTO;
 import com.satoru.book.model.entity.Role;
 import com.satoru.book.model.entity.User;
 import com.satoru.book.model.entity.UserRole;
@@ -10,6 +11,7 @@ import com.satoru.book.repository.UserRepository;
 import com.satoru.book.repository.UserRoleRepository;
 import com.satoru.book.service.UserRoleService;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.NotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,11 +37,11 @@ public class UserRoleServiceImpl implements UserRoleService {
     }
 
     @Override
-    public List<UserRoleDTO> getAllUserRoles() {
+    public List<UserRoleRespDTO> getAllUserRoles() {
         try {
             List<UserRole> userRoles = userRoleRepository.findAll();
             return userRoles.stream()
-                    .map(userRole -> modelMapper.map(userRole, UserRoleDTO.class))
+                    .map(userRole -> modelMapper.map(userRole, UserRoleRespDTO.class))
                     .collect(Collectors.toList());
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch all user roles: " + e.getMessage());
@@ -47,16 +49,18 @@ public class UserRoleServiceImpl implements UserRoleService {
     }
 
     @Override
-    public UserRoleDTO getUserRoleById(Long userId, Long roleId) {
+    public UserRoleRespDTO getUserRoleById(Long userId, Long roleId) {
         try {
             User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+                    .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
             Role role = roleRepository.findById(roleId)
-                    .orElseThrow(() -> new RuntimeException("Role not found with ID: " + roleId));
+                    .orElseThrow(() -> new NotFoundException("Role not found with ID: " + roleId));
             UserRoleId id = new UserRoleId(user, role);
             UserRole userRole = userRoleRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("User role not found for user ID: " + userId + " and role ID: " + roleId));
-            return modelMapper.map(userRole, UserRoleDTO.class);
+                    .orElseThrow(() -> new NotFoundException("User role not found for user ID: " + userId + " and role ID: " + roleId));
+            return modelMapper.map(userRole, UserRoleRespDTO.class);
+        } catch (NotFoundException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch user role for user ID " + userId + " and role ID " + roleId + ": " + e.getMessage());
         }
@@ -85,15 +89,17 @@ public class UserRoleServiceImpl implements UserRoleService {
     public UserRoleDTO updateUserRole(Long userId, Long roleId, UserRoleDTO userRoleDTO) {
         try {
             User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+                    .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
             Role role = roleRepository.findById(roleId)
-                    .orElseThrow(() -> new RuntimeException("Role not found with ID: " + roleId));
+                    .orElseThrow(() -> new NotFoundException("Role not found with ID: " + roleId));
             UserRoleId id = new UserRoleId(user, role);
             UserRole existingUserRole = userRoleRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("User role not found for user ID: " + userId + " and role ID: " + roleId));
+                    .orElseThrow(() -> new NotFoundException("User role not found for user ID: " + userId + " and role ID: " + roleId));
             // Since UserRole has no other fields, just return the existing one mapped
             // If there are fields, map them, but here it's just the relation
             return modelMapper.map(existingUserRole, UserRoleDTO.class);
+        } catch (NotFoundException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("Failed to update user role for user ID " + userId + " and role ID " + roleId + ": " + e.getMessage());
         }
@@ -103,14 +109,16 @@ public class UserRoleServiceImpl implements UserRoleService {
     public void deleteUserRole(Long userId, Long roleId) {
         try {
             User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+                    .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
             Role role = roleRepository.findById(roleId)
-                    .orElseThrow(() -> new RuntimeException("Role not found with ID: " + roleId));
+                    .orElseThrow(() -> new NotFoundException("Role not found with ID: " + roleId));
             UserRoleId id = new UserRoleId(user, role);
             if (!userRoleRepository.existsById(id)) {
-                throw new RuntimeException("User role not found for user ID: " + userId + " and role ID: " + roleId);
+                throw new NotFoundException("User role not found for user ID: " + userId + " and role ID: " + roleId);
             }
             userRoleRepository.deleteById(id);
+        } catch (NotFoundException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("Failed to delete user role for user ID " + userId + " and role ID " + roleId);
         }
