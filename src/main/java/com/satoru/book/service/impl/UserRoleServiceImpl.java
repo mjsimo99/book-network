@@ -28,7 +28,6 @@ public class UserRoleServiceImpl implements UserRoleService {
     private final RoleRepository roleRepository;
     private final ModelMapper modelMapper;
 
-    @Autowired
     public UserRoleServiceImpl(UserRoleRepository userRoleRepository, UserRepository userRepository, RoleRepository roleRepository, ModelMapper modelMapper) {
         this.userRoleRepository = userRoleRepository;
         this.userRepository = userRepository;
@@ -95,8 +94,7 @@ public class UserRoleServiceImpl implements UserRoleService {
             UserRoleId id = new UserRoleId(user, role);
             UserRole existingUserRole = userRoleRepository.findById(id)
                     .orElseThrow(() -> new NotFoundException("User role not found for user ID: " + userId + " and role ID: " + roleId));
-            // Since UserRole has no other fields, just return the existing one mapped
-            // If there are fields, map them, but here it's just the relation
+
             return modelMapper.map(existingUserRole, UserRoleDTO.class);
         } catch (NotFoundException e) {
             throw e;

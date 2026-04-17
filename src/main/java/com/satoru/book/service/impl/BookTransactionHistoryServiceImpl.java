@@ -21,7 +21,6 @@ public class BookTransactionHistoryServiceImpl implements BookTransactionHistory
     private final BookTransactionHistoryRepository bookTransactionHistoryRepository;
     private final ModelMapper modelMapper;
 
-    @Autowired
     public BookTransactionHistoryServiceImpl(BookTransactionHistoryRepository bookTransactionHistoryRepository, ModelMapper modelMapper) {
         this.bookTransactionHistoryRepository = bookTransactionHistoryRepository;
         this.modelMapper = modelMapper;

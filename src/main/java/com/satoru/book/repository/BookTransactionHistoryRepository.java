@@ -10,4 +10,6 @@ import java.util.List;
 public interface BookTransactionHistoryRepository extends JpaRepository<BookTransactionHistory, Long> {
     List<BookTransactionHistory> findByUser(User user);
     List<BookTransactionHistory> findByBook(Book book);
+    // i want all book by users
+
 }

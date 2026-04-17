@@ -8,7 +8,6 @@ import com.satoru.book.service.FeedbackService;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,7 +20,6 @@ public class FeedbackServiceImpl implements FeedbackService {
     private final FeedbackRepository feedbackRepository;
     private final ModelMapper modelMapper;
 
-    @Autowired
     public FeedbackServiceImpl(FeedbackRepository feedbackRepository, ModelMapper modelMapper) {
         this.feedbackRepository = feedbackRepository;
         this.modelMapper = modelMapper;

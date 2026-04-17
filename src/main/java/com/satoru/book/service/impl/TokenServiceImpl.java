@@ -21,7 +21,6 @@ public class TokenServiceImpl implements TokenService {
     private final TokenRepository tokenRepository;
     private final ModelMapper modelMapper;
 
-    @Autowired
     public TokenServiceImpl(TokenRepository tokenRepository, ModelMapper modelMapper) {
         this.tokenRepository = tokenRepository;
         this.modelMapper = modelMapper;
